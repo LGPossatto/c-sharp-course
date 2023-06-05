@@ -9,42 +9,35 @@ namespace code
     {
         static void Main(string[] args)
         {
-            List<Employee> employees = new List<Employee>();
+            PaymentService paymentService = new PaymentService(new SomePaymentService());
 
-            Console.Write("Enter the number of employees: ");
-            int employeesNumber = int.Parse(Console.ReadLine());
-
-            for (int i = 0; i < employeesNumber; i++)
-            {
-                Console.WriteLine($"Employees {i + 1}# data: ");
-                Console.Write("Outsourcer (y/n)? ");
-                char isOutsourced = char.Parse(Console.ReadLine());
-
-                Console.Write("Name: ");
-                string name = Console.ReadLine();
-                Console.Write("Hours: ");
-                int hours = int.Parse(Console.ReadLine());
-                Console.Write("Value per hour: ");
-                double valuePerHour = double.Parse(Console.ReadLine(), CultureInfo.InstalledUICulture);
-
-                if (isOutsourced == 'y')
-                {
-                    Console.Write("Addicional charge: ");
-                    double additionalCharge = double.Parse(Console.ReadLine(), CultureInfo.InstalledUICulture);
-
-                    employees.Add(new OutsourcedEmployee(name, hours, valuePerHour, additionalCharge));
-                }
-                else
-                {
-                    employees.Add(new Employee(name, hours, valuePerHour));
-                }
-            }
+            Console.WriteLine("Enter contract data: ");
+            Console.Write("Number: ");
+            int number = int.Parse(Console.ReadLine());
+            Console.Write("Date (dd/MM/yyyy): ");
+            DateTime date = DateTime.ParseExact(Console.ReadLine(), "dd/MM/yyyy", CultureInfo.InvariantCulture);
+            Console.Write("Contract value: ");
+            double contractValue = double.Parse(Console.ReadLine());
+            Contract contract = new Contract(number, date, contractValue);
 
             Console.WriteLine();
-            Console.WriteLine("Employees");
-            foreach (Employee employee in employees)
+            Console.Write("Enter number of installments: ");
+            int installmentsNumber = int.Parse(Console.ReadLine());
+            for (int i = 1; i <= installmentsNumber; i++)
             {
-                Console.WriteLine(employee);
+                DateTime newDate = contract.Date.AddMonths(i);
+                double newAmount = paymentService.OnlinePaymentService.MonthlyTotal((contract.TotalValue / installmentsNumber), i);
+                Installment newInstallment = new Installment(newDate, newAmount);
+
+                contract.AddInstallment(newInstallment);
+            }
+
+            foreach (Installment insta in contract.Installments)
+            {
+                Console.WriteLine(insta);
+            }
+            {
+
             }
         }
     }
